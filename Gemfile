@@ -46,6 +46,9 @@ gem "rack-attack" # rate-limiting
 gem "lograge" # for JSON logging
 gem "silencer" # to disable default logging in prod
 
+# custom
+gem 'cancancan'
+
 group :test, :development do
   gem "benchmark-perf"
   gem "brakeman"
