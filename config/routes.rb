@@ -93,6 +93,8 @@ Rails.application.routes.draw do
     post "unhide"
     post "save"
     post "unsave"
+    post "approve"
+    post "disapprove"
     get "suggest"
     post "suggest", action: "submit_suggestions"
   end

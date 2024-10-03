@@ -61,7 +61,7 @@ class Story < ApplicationRecord
   scope :front_page, -> { hottest.limit(StoriesPaginator::STORIES_PER_PAGE) }
 
   scope :with_approval_status, ->(user) {
-    if user.role == "admin"
+    if user && user.role == "admin"
       all
     else
       where(is_approved: true)

@@ -14,6 +14,7 @@ class ApplicationController < ActionController::Base
   # 2023-10-07 one user in one of their browser envs is getting a CSRF failure, I'm reverting
   # because I'll be AFK a while.
   # after_action :clear_lobster_trap
+  helper_method :current_user, :user_signed_in?
 
   # match this nginx config for bypassing the file cache
   TAG_FILTER_COOKIE = :tag_filters
@@ -33,6 +34,14 @@ class ApplicationController < ActionController::Base
   rescue_from ActionDispatch::Http::MimeNegotiation::InvalidType do
     render plain: "fix the mime type in your HTTP_ACCEPT header",
       status: :bad_request, content_type: "text/plain"
+  end
+
+  def current_user
+    @current_user ||= User.find_by(id: session[:user_id]) if session[:user_id]
+  end
+
+  def user_signed_in?
+    @user.present?
   end
 
   def agent_is_spider?
@@ -193,8 +202,32 @@ class ApplicationController < ActionController::Base
 
   def n_plus_one_detection
     Prosopite.scan
+    Rails.logger.info "Початок n_plus_one_detection з params: #{params.inspect}"
+    Rails.logger.info "Контролер: #{params[:controller]}, Дія: #{params[:action]}"
+    Rails.logger.info "Поточний користувач: #{@user.inspect}"
     yield
+  rescue ActiveRecord::RecordNotFound => e
+    Rails.logger.error "Помилка RecordNotFound в n_plus_one_detection: #{e.message}"
+    # Rails.logger.error "Всі short_id в базі даних: #{Story.pluck(:short_id)}"
+    Rails.logger.error "Стек виклику: #{e.backtrace.join("\n")}"
+    render 'errors/not_found', status: :not_found
+  rescue CanCan::AccessDenied => e
+    Rails.logger.error "Помилка AccessDenied в n_plus_one_detection: #{e.message}"
+    render 'errors/access_denied', status: :forbidden
   ensure
     Prosopite.finish
+    Rails.logger.info "Кінець n_plus_one_detection"
+  end
+
+  def current_ability
+    @current_ability ||= Ability.new(@user)
+  end
+
+  rescue_from CanCan::AccessDenied do |exception|
+    render 'errors/access_denied', status: :forbidden
+  end
+
+  rescue_from ActiveRecord::RecordNotFound do |exception|
+    render 'errors/not_found', status: :not_found
   end
 end

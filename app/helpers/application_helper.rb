@@ -5,6 +5,10 @@ module ApplicationHelper
 
   MAX_PAGES = 15
 
+  def can_be_comments_seen_by_user?(user)
+    Ability.new(user).can?(:read, Comment)
+  end
+
   def avatar_img(user, size)
     image_tag(
       user.avatar_path(size),

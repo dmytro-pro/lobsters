@@ -299,6 +299,40 @@ class _LobstersFunction {
     fetchWithCSRF("/stories/" + li.getAttribute("data-shortid") + "/" + act, {method: 'post'});
   }
 
+  approveStory(approverEl) {
+      if (!Lobster.curUser) return Lobster.bounceToLogin();
+
+      const li = parentSelector(approverEl, ".story, .comment");
+      let act;
+
+      if (li.classList.contains("approved")) {
+          act = "disapprove";
+          li.classList.remove("approved");
+          approverEl.innerHTML = "approve";
+      } else {
+          act = "approve";
+          li.classList.add("approved");
+          approverEl.innerHTML = "disapprove";
+      }
+
+      fetchWithCSRF("/stories/" + li.getAttribute("data-shortid") + "/" + act, {method: 'post'});
+  }
+
+  disapproveStory(approverEl) {
+      if (!Lobster.curUser) return Lobster.bounceToLogin();
+
+      const li = parentSelector(approverEl, ".story, .comment");
+      let act;
+
+      act = "disapprove";
+      if (li.classList.contains("approved")) {
+          li.classList.remove("approved");
+      }
+      approverEl.innerHTML = "approve";
+
+      fetchWithCSRF("/stories/" + li.getAttribute("data-shortid") + "/" + act, {method: 'post'});
+  }
+
   tomSelect(item) {
     if (!qS('#story_tags_a')) {
       return
@@ -565,6 +599,16 @@ onPageLoad(() => {
   on('click', 'li.story a.saver', (event) => {
     event.preventDefault();
     Lobster.saveStory(event.target);
+  });
+
+  on('click', 'li.story a.approver', (event) => {
+      event.preventDefault();
+      Lobster.approveStory(event.target);
+  });
+
+  on('click', 'li.story a.disapprover', (event) => {
+      event.preventDefault();
+      Lobster.disapproveStory(event.target);
   });
 
   on('click', 'button.story-preview', (event) => {

@@ -3,6 +3,9 @@
 class CommentsController < ApplicationController
   COMMENTS_PER_PAGE = 20
 
+  load_and_authorize_resource
+  skip_authorize_resource only: [:index]
+
   caches_page :index, :threads, if: CACHE_PAGE
 
   before_action :require_logged_in_user_or_400,
@@ -254,6 +257,7 @@ class CommentsController < ApplicationController
   end
 
   def index
+    authorize! :read, Comment
     @rss_link ||= {
       title: "RSS 2.0 - Newest Comments",
       href: "/comments.rss" + (@user ? "?token=#{@user.rss_token}" : "")

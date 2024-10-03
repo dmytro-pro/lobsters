@@ -1,6 +1,11 @@
 # typed: false
 
 class User < ApplicationRecord
+  # introduce null as guest
+  def role
+    super || 'guest'
+  end
+
   has_many :stories, -> { includes :user }, inverse_of: :user
   has_many :comments,
     inverse_of: :user,

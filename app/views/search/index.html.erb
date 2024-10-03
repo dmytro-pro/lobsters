@@ -155,6 +155,7 @@ class="story <%= story.current_upvoted? ? "upvoted" : "" %>
 <%= story.negativity_class %>
 <%= story.is_hidden_by_cur_user ? "hidden" : "" %>
 <%= story.is_saved_by_cur_user ? "saved" : "" %>
+<%= story.is_approved ? "approved" : "" %>
 <%= story.is_deleted? ? "deleted" : "" %>">
 <div class="story_liner h-entry">
   <div class="voters">
@@ -321,6 +322,23 @@ class="story <%= story.current_upvoted? ? "upvoted" : "" %>
               <%= story.comments_count %> <%= 'comment'.pluralize(story.comments_count) %></a>
             <% end %>
           </span>
+        <% end %>
+
+        <% if @user && @user.role == 'admin' %>
+          <% if !story.is_approved %>
+            <span> | </span><%= link_to "approve", story_approve_path(story.short_id),
+                                        :class => "approver" %>
+          <% end %>
+          <% if story.is_approved %>
+            <span> | </span><%= link_to "disapprove", story_disapprove_path(story.short_id),
+                                        :class => "approver" %>
+          <% end %>
+        <% else %>
+          <% if story.is_approved %>
+            <span> | </span>approved
+          <% else %>
+            <span> | </span>not_approved
+          <% end %>
         <% end %>
 
         <% if single_story &&

@@ -1,6 +1,10 @@
 # typed: false
 
 class StoriesController < ApplicationController
+  before_action :set_story, only: [:show, :edit, :destroy, :undelete, :save, :unsave, :approve, :disapprove, :upvote, :flag, :unvote, :hide, :unhide, :suggest, :submit_suggestions]
+
+  load_and_authorize_resource find_by: :short_id, only: [:save, :unsave, :approve, :disapprove]
+
   caches_page :show, if: CACHE_PAGE
 
   before_action :require_logged_in_user_or_400,
@@ -12,6 +16,14 @@ class StoriesController < ApplicationController
   before_action :find_story!, only: [:suggest, :submit_suggestions]
   around_action :track_story_reads, only: [:show], if: -> { @user.present? }
   before_action :show_title_h1, only: [:new, :edit, :suggest]
+
+  def set_story
+    @story = Story.find_by(short_id: params[:id])
+  end
+
+  def authenticate_admin!
+    redirect_to root_path, alert: 'You do not have permission to perform this action.' unless current_user.admin?
+  end
 
   def create
     @title = "Submit Story"
@@ -406,6 +418,26 @@ class StoriesController < ApplicationController
     end
 
     SavedStory.where(user_id: @user.id, story_id: story.id).delete_all
+
+    render plain: "ok"
+  end
+
+  def approve
+    if !(story = find_story)
+      return render plain: "can't find story", status: 400
+    end
+
+    story.update(is_approved: true)
+
+    render plain: "ok"
+  end
+
+  def disapprove
+    if !(story = find_story)
+      return render plain: "can't find story", status: 400
+    end
+
+    story.update(is_approved: false)
 
     render plain: "ok"
   end

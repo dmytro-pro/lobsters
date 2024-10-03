@@ -12,9 +12,11 @@ class Ability
     when 'user'
       can :read, Story, is_approved: true
       can :read, Comment
+      can [:save, :unsave], Story, is_approved: true
     when 'guest'
-      can :read, HomeController, :index # Allow guests to access the index action of HomeController
+      can :read, HomeController, :index
       can :read, Story, is_approved: true
+      can [:save, :unsave], Story, is_approved: true
       cannot :read, Comment
     end
   end
