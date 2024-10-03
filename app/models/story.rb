@@ -59,6 +59,15 @@ class Story < ApplicationRecord
   scope :positive_ranked, -> { where("score >= 0") }
   scope :low_scoring, ->(max = 5) { where("score < ?", max) }
   scope :front_page, -> { hottest.limit(StoriesPaginator::STORIES_PER_PAGE) }
+
+  scope :with_approval_status, ->(user) {
+    if user.role == "admin"
+      all
+    else
+      where(is_approved: true)
+    end
+  }
+
   scope :hottest, ->(user = nil, exclude_tags = nil) {
     base(user).not_hidden_by(user)
       .filter_tags(exclude_tags || [])
@@ -397,7 +406,40 @@ class Story < ApplicationRecord
   end
 
   def can_be_seen_by_user?(user)
-    !is_gone? || (user && (user.is_moderator? || user.id == user_id))
+    # !is_gone? || (user && (user.is_moderator? || user.id == user_id))
+    Rails.logger.info "Перевірка видимості історії #{id} для користувача #{user&.id}"
+    Rails.logger.info "is_gone?: #{is_gone?}"
+    Rails.logger.info "user_is_author?: #{user_is_author?()}"
+
+    if user && (user.is_moderator? || user.is_admin?)
+      Rails.logger.info "Користувач є модератором або адміністратором"
+      true
+    elsif self.is_gone? && (!user || !self.user_is_author?())
+      Rails.logger.info "Історія видалена і користувач не є автором"
+      false
+    else
+      Rails.logger.info "Історія доступна для перегляду"
+      true
+    end
+  end
+
+  def can_be_comments_seen_by_user?(user)
+    can?(:read, Comment)
+    # # !is_gone? || (user && (user.is_moderator? || user.id == user_id))
+    # Rails.logger.info "Перевірка видимості КОМЕНТАРІВ історії #{id} для користувача #{user&.id}"
+    # Rails.logger.info "is_gone?: #{is_gone?}"
+    # Rails.logger.info "user_is_author?: #{user_is_author?()}"
+    #
+    # if user && (user.is_moderator? || user.is_admin?)
+    #   Rails.logger.info "Користувач є модератором або адміністратором"
+    #   true
+    # elsif self.is_gone? && (!user || !self.user_is_author?())
+    #   Rails.logger.info "Історія видалена і користувач не є автором"
+    #   false
+    # else
+    #   Rails.logger.info "Історія доступна для перегляду"
+    #   true
+    # end
   end
 
   def can_have_images?

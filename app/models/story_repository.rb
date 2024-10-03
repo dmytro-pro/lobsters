@@ -13,7 +13,7 @@ class StoryRepository
   end
 
   def hottest
-    hottest = Story.base(@user).positive_ranked.not_hidden_by(@user)
+    hottest = Story.base(@user).positive_ranked.not_hidden_by(@user).with_approval_status(@user)
     hottest = hottest.filter_tags(@params[:exclude_tags] || [])
     hottest.order("hotness")
   end
