@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_09_07_171330) do
+ActiveRecord::Schema[7.1].define(version: 2024_09_14_096248) do
   create_table "categories", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.string "category", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -235,6 +235,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_09_07_171330) do
     t.boolean "user_is_following", default: false, null: false
     t.bigint "domain_id"
     t.string "mastodon_id", limit: 25
+    t.boolean "is_approved", default: false
     t.index ["created_at"], name: "index_stories_on_created_at"
     t.index ["domain_id"], name: "index_stories_on_domain_id"
     t.index ["hotness"], name: "hotness_idx"
@@ -329,6 +330,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_09_07_171330) do
     t.text "settings", size: :medium
     t.boolean "show_email", default: false, null: false
     t.datetime "last_read_newest"
+    t.string "role", default: "guest", null: false
     t.index ["banned_by_user_id"], name: "users_banned_by_user_id_fk"
     t.index ["disabled_invite_by_user_id"], name: "users_disabled_invite_by_user_id_fk"
     t.index ["email"], name: "index_users_on_email", unique: true
