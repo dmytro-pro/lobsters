@@ -35,7 +35,7 @@
   <% end %>
 </div>
 
-<% if !@story.previewing %>
+<% if !@story.previewing && can_be_comments_seen_by_user?(@user) %>
   <ol class="comments comments1">
     <% if !@story.is_gone? && !@story.previewing && @story.accepting_comments? %>
       <li class="comments_subtree"><%= render partial: "comments/commentbox", locals: { comment: @comment, story: @story } %></li>
@@ -60,6 +60,10 @@
     </li>
 
   </ol>
+<% else %>
+  <div class="box wide">
+    <h4>Sorry, guest users cannot see story comments</h4>
+  </div>
 <% end %>
 
 <% if !@story.previewing && @story.public_similar_stories(@user).length > 0 %>
