@@ -423,9 +423,8 @@ class StoriesController < ApplicationController
   end
 
   def approve
-    if !(story = find_story)
-      return render plain: "can't find story", status: 400
-    end
+    story = find_story
+    return render plain: "can't find story", status: 400 unless story
 
     story.update(is_approved: true)
 
@@ -433,9 +432,8 @@ class StoriesController < ApplicationController
   end
 
   def disapprove
-    if !(story = find_story)
-      return render plain: "can't find story", status: 400
-    end
+    story = find_story
+    return render plain: "can't find story", status: 400 unless story
 
     story.update(is_approved: false)
 
