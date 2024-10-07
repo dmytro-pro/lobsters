@@ -10,53 +10,45 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - traefik # Connect db to the traefik network
       - lobsters-dev
+#      - traefik
 
   web:
     env_file:
       - .env
-    build: .
-    command: "rails server -b 0.0.0.0"
-#    command: tail -f /dev/null
-    # command: "bundle install && rails server -b 0.0.0.0"
-    # command: "bundle clean --force && rails server -b 0.0.0.0"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/app/docker-entrypoint.sh"]
+    command: ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
     volumes:
       - .:/app
-#      - /app/node_modules
     ports:
       - "3001:3000"
-      # Ports required for debugging
       - "12344:1234"
       - "26167:26168"
-      # SSH (not for common use)
       - "4222:22"
     depends_on:
       - db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.lobsters-dev.rule=Host(`${WEB_HOST}`)"
+      - "traefik.http.routers.lobsters-dev.rule=Host(`${WEB_HOST:-lobsters.loc}`)"
       - "traefik.http.services.lobsters-dev.loadbalancer.server.port=3000"
-
-      # - "traefik.http.routers.lobsters.entrypoints=web"
-
       - "traefik.http.routers.lobsters-dev.entrypoints=websecure"
       - "traefik.http.routers.lobsters-dev.tls=true"
       - "traefik.http.routers.lobsters-dev.tls.certresolver=myresolver"
       - "traefik.docker.network=traefik"
-      ##
       - "traefik.http.services.lobsters-dev.loadbalancer.sticky=true"
       - "traefik.http.services.lobsters-dev.loadbalancer.sticky.cookie.name=sticky_cookie"
       - "traefik.http.services.lobsters-dev.loadbalancer.sticky.cookie.secure=true"
     networks:
-      - traefik
       - lobsters-dev
+#      - traefik
 
 volumes:
   db_data: {}
 
 networks:
   lobsters-dev:
-  traefik:
-    external: true
-
+#  traefik:
+#    external: true

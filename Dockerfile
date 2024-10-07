@@ -6,7 +6,7 @@ RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources
 
 # Install dependencies, including Node.js 16.x
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs postgresql-client yarn
+    apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs postgresql-client yarn default-mysql-client
 
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 RUN mkdir /app
@@ -20,5 +20,8 @@ RUN bundle install
 RUN #yarn install --check-files
 COPY . /app
 EXPOSE 3000
+
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 #CMD ["rails", "server", "-b", "0.0.0.0"]
