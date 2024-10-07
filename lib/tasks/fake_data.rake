@@ -80,6 +80,7 @@ class FakeDataGenerator
     print "Stories "
     stories = []
     @stories_count.times do |i|
+      approved = (i % 5).zero? ## each 5th story is approved
       print "."
       user = users[Random.rand(@users_count - 1)]
       title = Faker::Lorem.sentence(word_count: 3)
@@ -102,7 +103,8 @@ class FakeDataGenerator
         title: title,
         url: url,
         description: description,
-        tags_a: [tag.tag]
+        tags_a: [tag.tag],
+        is_approved: approved
       }
       story = Story.create!(create_args)
       StoryText.create!({
